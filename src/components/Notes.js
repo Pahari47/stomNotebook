@@ -1,13 +1,20 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from 'react-router-dom'
 import noteContext from "../context/notes/noteContext";
 import NoteItem from "./NoteItem";
 import AddNote from "./AddNote";
 
-const Notes = () => {
+const Notes = (props) => {
   const context = useContext(noteContext);
+  const navigate = useNavigate();
   const { notes, getNotes, editNote } = context;
   useEffect(() => {
-    getNotes()
+    if(localStorage.getItem('token')){
+      getNotes()
+    }
+    else{
+      navigate("/login")
+    }
     // eslint-disable-next-line
   }, [])
   const ref = useRef(null)
@@ -21,13 +28,14 @@ const Notes = () => {
   const handleClick = (e) => {
     editNote(note.id, note.etitle, note.edescription, note.etag)
     refClose.current.click();
+    props.showAlert("Updated Successfully", "success")
   }
   const onChange = (e) => {
     setNote({ ...note, [e.target.name]: e.target.value })
   }
   return (
     <>
-      <AddNote />
+      <AddNote showAlert={props.showAlert}/>
       <button ref={ref} type="button" className="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#exampleModal">
         Launch demo modal
       </button>
@@ -40,7 +48,7 @@ const Notes = () => {
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
-              .<form className="my-3">
+              <form className="my-3">
                 <div className="mb-3">
                   <label htmlFor="title" className="form-label">
                     Title
@@ -87,7 +95,7 @@ const Notes = () => {
         {notes.length===0 && 'No notes to display'}
         </div>
         {notes.map((note) => {
-          return <NoteItem key={note._id} updateNote={updateNote} note={note} />;
+          return <NoteItem key={note._id} updateNote={updateNote} showAlert={props.showAlert} note={note} />;
         })}
       </div>
     </>
